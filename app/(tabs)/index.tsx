@@ -9,6 +9,7 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -40,7 +41,6 @@ const CalendarIcon = () => <Text style={styles.icon}>📅</Text>;
 const ClockIcon = () => <Text style={styles.icon}>🕐</Text>;
 const MapPinIcon = () => <Text style={styles.icon}>📍</Text>;
 const UserIcon = () => <Text style={styles.icon}>👤</Text>;
-const FilterIcon = () => <Text style={styles.icon}>🔍</Text>;
 const BackIcon = () => <Text style={styles.icon}>←</Text>;
 const ShareIcon = () => <Text style={styles.icon}>📤</Text>;
 const BookmarkIcon = () => <Text style={styles.icon}>🔖</Text>;
@@ -167,6 +167,45 @@ const EVENIMENTE: Eveniment[] = [
       { nume: "MyTicket", url: "https://www.myticket.ro" },
     ],
   },
+  {
+    id: 6,
+    titlu: "Festival de Film: TIFF - Timișoara International Film Festival",
+    descriere: "Proiecții de filme independente și documentare",
+    data: "2026-02-20",
+    dataFormatata: "vin., 20 feb. 2026",
+    ora: "19:00",
+    locatie: "Cinema Victoria, Bulevardul Revoluției din 1989, Timișoara",
+    categorie: "Film",
+    culoare: "#4a5568",
+    imageUrl:
+      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&h=600&fit=crop",
+    detalii:
+      "Festivalul Internațional de Film de la Timișoara aduce la ecran cele mai bune filme independente și documentare din întreaga lume. Proiecții speciale, întâlniri cu regizori și discuții despre cinematografie.",
+    linkuriTickets: [
+      { nume: "iaBilet", url: "https://www.iabilet.ro" },
+      { nume: "Eventim", url: "https://www.eventim.ro" },
+    ],
+  },
+  {
+    id: 7,
+    titlu: "Concert Clasic: Orchestra Filarmonicii de Stat Timișoara",
+    descriere: "Simfonia nr. 9 de Beethoven",
+    data: "2026-02-25",
+    dataFormatata: "mie., 25 feb. 2026",
+    ora: "19:30",
+    locatie: "Filarmonica de Stat, Piața Victoriei 1, Timișoara",
+    categorie: "Muzică",
+    culoare: "#2d3748",
+    imageUrl:
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop",
+    detalii:
+      "O seară memorabilă cu Orchestra Filarmonicii de Stat Timișoara, prezentând Simfonia nr. 9 de Ludwig van Beethoven. Dirijor: maestro Cristian Mandeal. Un eveniment de neuitat pentru iubitorii de muzică clasică.",
+    linkuriTickets: [
+      { nume: "iaBilet", url: "https://www.iabilet.ro" },
+      { nume: "Eventim", url: "https://www.eventim.ro" },
+      { nume: "MyTicket", url: "https://www.myticket.ro" },
+    ],
+  },
 ];
 
 interface EcranPrincipalProps {
@@ -175,6 +214,12 @@ interface EcranPrincipalProps {
 
 function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter events based on search query
+  const filteredEvents = EVENIMENTE.filter((eveniment) =>
+    eveniment.titlu.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -208,10 +253,27 @@ function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
           </View>
         )}
 
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Caută evenimente..."
+            placeholderTextColor="rgba(255, 255, 255, 0.6)"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearchQuery("")}
+              style={styles.clearButton}
+            >
+              <Text style={styles.clearButtonText}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
         <View style={styles.headerButtons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <FilterIcon />
-          </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
             <CalendarIcon />
           </TouchableOpacity>
@@ -223,59 +285,71 @@ function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {EVENIMENTE.map((eveniment) => (
-          <TouchableOpacity
-            key={eveniment.id}
-            style={styles.evenimentCard}
-            onPress={() => onSelectEvent(eveniment)}
-            activeOpacity={0.7}
-          >
-            <View
-              style={[
-                styles.evenimentBanner,
-                { backgroundColor: eveniment.culoare },
-              ]}
+        {filteredEvents.length === 0 ? (
+          <View style={styles.noResultsContainer}>
+            <Text style={styles.noResultsText}>
+              Nu s-au găsit evenimente pentru {'"'}
+              {searchQuery}
+              {'"'}
+            </Text>
+          </View>
+        ) : (
+          filteredEvents.map((eveniment) => (
+            <TouchableOpacity
+              key={eveniment.id}
+              style={styles.evenimentCard}
+              onPress={() => onSelectEvent(eveniment)}
+              activeOpacity={0.7}
             >
-              <Image
-                source={{ uri: eveniment.imageUrl }}
-                style={styles.evenimentBannerImage}
-                contentFit="cover"
-              />
-              <View style={styles.bannerOverlay} />
-              <View style={styles.categoryBadge}>
-                <Text style={styles.categoryText}>{eveniment.categorie}</Text>
-              </View>
-              <TouchableOpacity style={styles.bookmarkButton}>
-                <BookmarkIcon />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.evenimentContent}>
-              <Text style={styles.evenimentTitlu}>{eveniment.titlu}</Text>
-              <Text style={styles.evenimentDescriere}>
-                {eveniment.descriere}
-              </Text>
-
-              <View style={styles.evenimentInfo}>
-                <View style={styles.infoRow}>
-                  <CalendarIcon />
-                  <Text style={styles.infoText}>{eveniment.dataFormatata}</Text>
+              <View
+                style={[
+                  styles.evenimentBanner,
+                  { backgroundColor: eveniment.culoare },
+                ]}
+              >
+                <Image
+                  source={{ uri: eveniment.imageUrl }}
+                  style={styles.evenimentBannerImage}
+                  contentFit="cover"
+                />
+                <View style={styles.bannerOverlay} />
+                <View style={styles.categoryBadge}>
+                  <Text style={styles.categoryText}>{eveniment.categorie}</Text>
                 </View>
-                <View style={styles.infoRow}>
-                  <ClockIcon />
-                  <Text style={styles.infoText}>{eveniment.ora}</Text>
-                </View>
+                <TouchableOpacity style={styles.bookmarkButton}>
+                  <BookmarkIcon />
+                </TouchableOpacity>
               </View>
 
-              <View style={styles.infoRow}>
-                <MapPinIcon />
-                <Text style={[styles.infoText, styles.locatieText]}>
-                  {eveniment.locatie}
+              <View style={styles.evenimentContent}>
+                <Text style={styles.evenimentTitlu}>{eveniment.titlu}</Text>
+                <Text style={styles.evenimentDescriere}>
+                  {eveniment.descriere}
                 </Text>
+
+                <View style={styles.evenimentInfo}>
+                  <View style={styles.infoRow}>
+                    <CalendarIcon />
+                    <Text style={styles.infoText}>
+                      {eveniment.dataFormatata}
+                    </Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <ClockIcon />
+                    <Text style={styles.infoText}>{eveniment.ora}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <MapPinIcon />
+                  <Text style={[styles.infoText, styles.locatieText]}>
+                    {eveniment.locatie}
+                  </Text>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -490,6 +564,34 @@ const styles = StyleSheet.create({
     color: "#999",
     marginTop: 8,
   },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  searchIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: "#FFF",
+    fontSize: 16,
+    paddingVertical: 4,
+  },
+  clearButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  clearButtonText: {
+    color: "#FFF",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   headerButtons: {
     flexDirection: "row",
     gap: 12,
@@ -501,6 +603,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+  },
+  noResultsContainer: {
+    padding: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
   },
   scrollView: {
     flex: 1,
