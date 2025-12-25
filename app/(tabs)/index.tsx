@@ -1,98 +1,716 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// App.js - Înlocuiește conținutul fișierului App.js din root
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Image } from "expo-image";
+import React, { useState } from "react";
+import {
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-export default function HomeScreen() {
+// Type definitions
+interface TicketLink {
+  nume: string;
+  url: string;
+}
+
+interface Eveniment {
+  id: number;
+  titlu: string;
+  descriere: string;
+  data: string;
+  dataFormatata: string;
+  ora: string;
+  locatie: string;
+  categorie: string;
+  culoare: string;
+  imageUrl: string;
+  detalii: string;
+  linkuriTickets: TicketLink[];
+}
+
+// Mock icons (în React Native ai nevoie de react-native-vector-icons sau @expo/vector-icons)
+// Pentru simplitate, folosim emoji-uri
+const CalendarIcon = () => <Text style={styles.icon}>📅</Text>;
+const ClockIcon = () => <Text style={styles.icon}>🕐</Text>;
+const MapPinIcon = () => <Text style={styles.icon}>📍</Text>;
+const UserIcon = () => <Text style={styles.icon}>👤</Text>;
+const FilterIcon = () => <Text style={styles.icon}>🔍</Text>;
+const BackIcon = () => <Text style={styles.icon}>←</Text>;
+const ShareIcon = () => <Text style={styles.icon}>📤</Text>;
+const BookmarkIcon = () => <Text style={styles.icon}>🔖</Text>;
+
+// Date evenimente hardcodate
+const EVENIMENTE: Eveniment[] = [
+  {
+    id: 0,
+    titlu: "Concert Calinacho",
+    descriere: "Show live cu hiturile cele mai cunoscute",
+    data: "2026-01-15",
+    dataFormatata: "joi, 15 ian. 2026",
+    ora: "21:00",
+    locatie: "Sala Polivalentă, Bulevardul Liviu Rebreanu 6, Timișoara",
+    categorie: "Muzică",
+    culoare: "#1a1a2e",
+    imageUrl:
+      "https://yt3.googleusercontent.com/hD95zJPOdMs5IG4XZW4pQDgKaZun4qpzBYS3A5xqborU4UEQytdhDihig25sithll7CVSyAUp3M=s900-c-k-c0x00ffffff-no-rj",
+    detalii:
+      "Calinacho vine la Timișoara cu un concert spectaculos! Așteaptă-te la un show live cu toate hiturile care l-au făcut cunoscut în întreaga țară. Atmosferă de neuitat, sound profesional și o experiență muzicală de excepție.",
+    linkuriTickets: [
+      { nume: "iaBilet", url: "https://www.iabilet.ro" },
+      { nume: "Eventim", url: "https://www.eventim.ro" },
+      { nume: "MyTicket", url: "https://www.myticket.ro" },
+      { nume: "Bilete.ro", url: "https://www.bilete.ro" },
+    ],
+  },
+  {
+    id: 1,
+    titlu: "Expoziție de Artă Contemporană",
+    descriere: "Lucrări de artiști români și internaționali",
+    data: "2026-01-18",
+    dataFormatata: "dum., 18 ian. 2026",
+    ora: "18:00",
+    locatie: "Muzeul de Artă, Piața Unirii 1, Timișoara",
+    categorie: "Artă",
+    culoare: "#667eea",
+    imageUrl:
+      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&h=600&fit=crop",
+    detalii:
+      "O expoziție cuprinzătoare ce prezintă lucrări de artă contemporană de la artiști români și internaționali recunoscuți. Evenimentul oferă o perspectivă unică asupra tendințelor actuale în arta vizuală.",
+    linkuriTickets: [
+      { nume: "iaBilet", url: "https://www.iabilet.ro" },
+      { nume: "Eventim", url: "https://www.eventim.ro" },
+    ],
+  },
+  {
+    id: 2,
+    titlu: "Piesa de Teatru: Cui i-e frică de Virginia Woolf?",
+    descriere: "Regie: Andrei Șerban",
+    data: "2026-01-20",
+    dataFormatata: "mar., 20 ian. 2026",
+    ora: "19:30",
+    locatie: "Teatrul Național, Str. Mărășești 2, Timișoara",
+    categorie: "Teatru",
+    culoare: "#f5576c",
+    imageUrl:
+      "https://images.unsplash.com/photo-1503095396549-807759245b35?w=800&h=600&fit=crop",
+    detalii:
+      "Una dintre cele mai puternice piese de teatru ale secolului XX, pusă în scenă de regizorul de renume internațional Andrei Șerban. O experiență teatrală intensă și memorabilă.",
+    linkuriTickets: [
+      { nume: "iaBilet", url: "https://www.iabilet.ro" },
+      { nume: "Eventim", url: "https://www.eventim.ro" },
+      { nume: "MyTicket", url: "https://www.myticket.ro" },
+    ],
+  },
+  {
+    id: 3,
+    titlu: "Concert Rock: The Urban Legends",
+    descriere: "Concertul anului! The Urban Legends prezintă noul album",
+    data: "2026-01-28",
+    dataFormatata: "mie., 28 ian. 2026",
+    ora: "21:00",
+    locatie: "Sala Polivalentă, Bulevardul Liviu Rebreanu 6, Timișoara",
+    categorie: "Muzică",
+    culoare: "#a8edea",
+    imageUrl:
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop",
+    detalii:
+      "Concertul anului! The Urban Legends prezintă noul album într-un show spectaculos cu efecte vizuale impresionante. Opening act: Neon Lights. Bar deschis și merchandising oficial.",
+    linkuriTickets: [
+      { nume: "iaBilet", url: "https://www.iabilet.ro" },
+      { nume: "Eventim", url: "https://www.eventim.ro" },
+      { nume: "MyTicket", url: "https://www.myticket.ro" },
+      { nume: "Bilete.ro", url: "https://www.bilete.ro" },
+    ],
+  },
+  {
+    id: 4,
+    titlu: "Festival de Jazz: Jazz în Orașul Vechi",
+    descriere: "Artiști locali și internaționali",
+    data: "2026-02-05",
+    dataFormatata: "joi, 5 feb. 2026",
+    ora: "20:00",
+    locatie: "Club Doors, Str. Emanoil Ungureanu 7, Timișoara",
+    categorie: "Muzică",
+    culoare: "#ffecd2",
+    imageUrl:
+      "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=800&h=600&fit=crop",
+    detalii:
+      "O seară dedicată jazz-ului cu artiști locali și internaționali. Atmosferă intimă și sofisticată într-una dintre cele mai iconice locații din Timișoara.",
+    linkuriTickets: [
+      { nume: "iaBilet", url: "https://www.iabilet.ro" },
+      { nume: "Bilete.ro", url: "https://www.bilete.ro" },
+    ],
+  },
+  {
+    id: 5,
+    titlu: "Stand-up Comedy: Seară de Umor",
+    descriere: "Cu Costel, Micutzu și invitați speciali",
+    data: "2026-02-12",
+    dataFormatata: "joi, 12 feb. 2026",
+    ora: "20:30",
+    locatie: "Casa de Cultură, Bulevardul Regele Ferdinand 2, Timișoara",
+    categorie: "Comedy",
+    culoare: "#ff9a9e",
+    imageUrl:
+      "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=800&h=600&fit=crop",
+    detalii:
+      "O seară plină de râs alături de cei mai apreciați comedianți români. Show de stand-up comedy cu durată de aproximativ 2 ore.",
+    linkuriTickets: [
+      { nume: "iaBilet", url: "https://www.iabilet.ro" },
+      { nume: "Eventim", url: "https://www.eventim.ro" },
+      { nume: "MyTicket", url: "https://www.myticket.ro" },
+    ],
+  },
+];
+
+interface EcranPrincipalProps {
+  onSelectEvent: (eveniment: Eveniment) => void;
+}
+
+function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
+  const [showDropdown, setShowDropdown] = useState(false);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity
+            style={styles.citySelector}
+            onPress={() => setShowDropdown(!showDropdown)}
+          >
+            <Text style={styles.headerTitle}>Evenimente în Timișoara</Text>
+            <Text style={styles.chevron}>{showDropdown ? "▲" : "▼"}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profileButton}>
+            <UserIcon />
+          </TouchableOpacity>
+        </View>
+
+        {showDropdown && (
+          <View style={styles.dropdown}>
+            <Text style={styles.dropdownTitle}>SELECTEAZĂ ORAȘUL</Text>
+            <TouchableOpacity style={styles.dropdownItem}>
+              <Text style={styles.dropdownItemText}>Timișoara</Text>
+              <Text style={styles.checkmark}>✓</Text>
+            </TouchableOpacity>
+            <Text style={styles.dropdownSubtext}>
+              Mai multe orașe în curând...
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.headerButtons}>
+          <TouchableOpacity style={styles.iconButton}>
+            <FilterIcon />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <CalendarIcon />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Lista evenimente */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {EVENIMENTE.map((eveniment) => (
+          <TouchableOpacity
+            key={eveniment.id}
+            style={styles.evenimentCard}
+            onPress={() => onSelectEvent(eveniment)}
+            activeOpacity={0.7}
+          >
+            <View
+              style={[
+                styles.evenimentBanner,
+                { backgroundColor: eveniment.culoare },
+              ]}
+            >
+              <Image
+                source={{ uri: eveniment.imageUrl }}
+                style={styles.evenimentBannerImage}
+                contentFit="cover"
+              />
+              <View style={styles.bannerOverlay} />
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryText}>{eveniment.categorie}</Text>
+              </View>
+              <TouchableOpacity style={styles.bookmarkButton}>
+                <BookmarkIcon />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.evenimentContent}>
+              <Text style={styles.evenimentTitlu}>{eveniment.titlu}</Text>
+              <Text style={styles.evenimentDescriere}>
+                {eveniment.descriere}
+              </Text>
+
+              <View style={styles.evenimentInfo}>
+                <View style={styles.infoRow}>
+                  <CalendarIcon />
+                  <Text style={styles.infoText}>{eveniment.dataFormatata}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <ClockIcon />
+                  <Text style={styles.infoText}>{eveniment.ora}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <MapPinIcon />
+                <Text style={[styles.infoText, styles.locatieText]}>
+                  {eveniment.locatie}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+interface EcranDetaliiProps {
+  eveniment: Eveniment;
+  onBack: () => void;
+}
+
+function EcranDetalii({ eveniment, onBack }: EcranDetaliiProps) {
+  const handleTicketPress = (url: string) => {
+    Linking.openURL(url).catch((err) =>
+      console.error("Couldn't load page", err)
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+
+      {/* Header detalii */}
+      <View style={styles.detailsHeader}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <BackIcon />
+        </TouchableOpacity>
+        <Text style={styles.detailsHeaderTitle}>Detalii eveniment</Text>
+      </View>
+
+      <ScrollView style={styles.scrollView}>
+        {/* Banner */}
+        <View
+          style={[styles.detailsBanner, { backgroundColor: eveniment.culoare }]}
+        >
+          <Image
+            source={{ uri: eveniment.imageUrl }}
+            style={styles.detailsBannerImage}
+            contentFit="cover"
+          />
+          <View style={styles.bannerOverlay} />
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{eveniment.categorie}</Text>
+          </View>
+        </View>
+
+        {/* Titlu și acțiuni */}
+        <View style={styles.detailsContent}>
+          <Text style={styles.detailsTitlu}>{eveniment.titlu}</Text>
+
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.actionButton}>
+              <ShareIcon />
+              <Text style={styles.actionButtonText}>Share</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <BookmarkIcon />
+              <Text style={styles.actionButtonText}>Salvează</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Informații eveniment */}
+          <View style={styles.infoBox}>
+            <View style={styles.infoBoxRow}>
+              <View
+                style={[styles.infoIconBox, { backgroundColor: "#dbeafe" }]}
+              >
+                <CalendarIcon />
+              </View>
+              <View style={styles.infoBoxContent}>
+                <Text style={styles.infoBoxLabel}>DATA</Text>
+                <Text style={styles.infoBoxValue}>
+                  {eveniment.dataFormatata}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.infoBoxRow}>
+              <View
+                style={[styles.infoIconBox, { backgroundColor: "#d1fae5" }]}
+              >
+                <ClockIcon />
+              </View>
+              <View style={styles.infoBoxContent}>
+                <Text style={styles.infoBoxLabel}>ORA</Text>
+                <Text style={styles.infoBoxValue}>{eveniment.ora}</Text>
+              </View>
+            </View>
+
+            <View style={styles.infoBoxRow}>
+              <View
+                style={[styles.infoIconBox, { backgroundColor: "#fee2e2" }]}
+              >
+                <MapPinIcon />
+              </View>
+              <View style={styles.infoBoxContent}>
+                <Text style={styles.infoBoxLabel}>LOCAȚIE</Text>
+                <Text style={styles.infoBoxValue}>{eveniment.locatie}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Despre eveniment */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Despre eveniment</Text>
+            <Text style={styles.sectionText}>{eveniment.detalii}</Text>
+          </View>
+
+          {/* Linkuri tickets */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Cumpără bilete</Text>
+            {eveniment.linkuriTickets.map((link: TicketLink, index: number) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.ticketButton}
+                onPress={() => handleTicketPress(link.url)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.ticketButtonText}>
+                  📱 Bilete pe {link.nume}
+                </Text>
+                <Text style={styles.ticketButtonArrow}>→</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+export default function App() {
+  const [evenimentSelectat, setEvenimentSelectat] = useState<Eveniment | null>(
+    null
+  );
+
+  return evenimentSelectat ? (
+    <EcranDetalii
+      eveniment={evenimentSelectat}
+      onBack={() => setEvenimentSelectat(null)}
+    />
+  ) : (
+    <EcranPrincipal onSelectEvent={setEvenimentSelectat} />
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
   },
-  stepContainer: {
-    gap: 8,
+  icon: {
+    fontSize: 20,
+  },
+  header: {
+    backgroundColor: "#5B7FFF",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  citySelector: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FFF",
+    marginRight: 8,
+  },
+  chevron: {
+    color: "#FFF",
+    fontSize: 16,
+  },
+  profileButton: {
+    padding: 8,
+  },
+  dropdown: {
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  dropdownTitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#666",
+    marginBottom: 12,
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    color: "#5B7FFF",
+    fontWeight: "500",
+  },
+  checkmark: {
+    fontSize: 18,
+    color: "#5B7FFF",
+  },
+  dropdownSubtext: {
+    fontSize: 14,
+    color: "#999",
+    marginTop: 8,
+  },
+  headerButtons: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  iconButton: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    padding: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  evenimentCard: {
+    backgroundColor: "#FFF",
+    marginBottom: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  evenimentBanner: {
+    height: 150,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    overflow: "hidden",
+  },
+  evenimentBannerImage: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+  },
+  bannerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+  },
+  categoryBadge: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  categoryText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#333",
+  },
+  bookmarkButton: {
+    position: "absolute",
+    bottom: 12,
+    left: 12,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    padding: 8,
+    borderRadius: 8,
+  },
+  evenimentContent: {
+    padding: 16,
+  },
+  evenimentTitlu: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 4,
+  },
+  evenimentDescriere: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 12,
+  },
+  evenimentInfo: {
+    flexDirection: "row",
+    gap: 16,
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  infoText: {
+    fontSize: 13,
+    color: "#666",
+  },
+  locatieText: {
+    flex: 1,
+  },
+  detailsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#FFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5E5",
+  },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
+  },
+  detailsHeaderTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000",
+  },
+  detailsBanner: {
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    overflow: "hidden",
+  },
+  detailsBannerImage: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+  },
+  detailsContent: {
+    padding: 16,
+  },
+  detailsTitlu: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 16,
+  },
+  actionButtons: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 24,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#F5F5F5",
+    padding: 14,
+    borderRadius: 12,
+  },
+  actionButtonText: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#666",
+  },
+  infoBox: {
+    backgroundColor: "#F8F9FA",
+    borderRadius: 12,
+    padding: 16,
+    gap: 16,
+    marginBottom: 24,
+  },
+  infoBoxRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  infoIconBox: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  infoBoxContent: {
+    flex: 1,
+  },
+  infoBoxLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#999",
+    marginBottom: 4,
+  },
+  infoBoxValue: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#000",
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 12,
+  },
+  sectionText: {
+    fontSize: 15,
+    color: "#666",
+    lineHeight: 22,
+  },
+  ticketButton: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#5B7FFF",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  ticketButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFF",
+  },
+  ticketButtonArrow: {
+    fontSize: 20,
+    color: "#FFF",
   },
 });
