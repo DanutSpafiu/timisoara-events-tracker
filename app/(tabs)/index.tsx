@@ -1,7 +1,7 @@
 // App.js - Înlocuiește conținutul fișierului App.js din root
 
 import { Image } from "expo-image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Linking,
   ScrollView,
@@ -12,6 +12,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Type definitions
@@ -50,7 +55,8 @@ const EVENIMENTE: Eveniment[] = [
   {
     id: 0,
     titlu: "Concert Calinacho",
-    descriere: "Show live cu hiturile cele mai cunoscute",
+    descriere:
+      "Ultima noapte de dragoste. Ai Grija. Dezamagit. Doar cateva titluri! Hai la concert Calinacho si bucurate-te de muzica care face si cei mai tari oameni sa lacrimeze.",
     data: "2026-01-15",
     dataFormatata: "joi, 15 ian. 2026",
     ora: "21:00",
@@ -488,13 +494,58 @@ export default function App() {
     null
   );
 
-  return evenimentSelectat ? (
-    <EcranDetalii
-      eveniment={evenimentSelectat}
-      onBack={() => setEvenimentSelectat(null)}
-    />
-  ) : (
-    <EcranPrincipal onSelectEvent={setEvenimentSelectat} />
+  // Animation values for crossfade
+  const listOpacity = useSharedValue(1);
+  const detailsOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (evenimentSelectat) {
+      // Show details, hide list
+      listOpacity.value = withTiming(0, { duration: 200 });
+      detailsOpacity.value = withTiming(1, { duration: 200 });
+    } else {
+      // Show list, hide details
+      detailsOpacity.value = withTiming(0, { duration: 200 });
+      listOpacity.value = withTiming(1, { duration: 200 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [evenimentSelectat]);
+
+  const listAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: listOpacity.value,
+    };
+  });
+
+  const detailsAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: detailsOpacity.value,
+    };
+  });
+
+  return (
+    <View style={styles.container}>
+      {!evenimentSelectat && (
+        <Animated.View
+          style={[StyleSheet.absoluteFill, listAnimatedStyle]}
+          pointerEvents="auto"
+        >
+          <EcranPrincipal onSelectEvent={setEvenimentSelectat} />
+        </Animated.View>
+      )}
+
+      {evenimentSelectat && (
+        <Animated.View
+          style={[StyleSheet.absoluteFill, detailsAnimatedStyle]}
+          pointerEvents="auto"
+        >
+          <EcranDetalii
+            eveniment={evenimentSelectat}
+            onBack={() => setEvenimentSelectat(null)}
+          />
+        </Animated.View>
+      )}
+    </View>
   );
 }
 
@@ -502,6 +553,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
+    overflow: "hidden",
   },
   icon: {
     fontSize: 20,
