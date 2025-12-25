@@ -4,7 +4,6 @@ import { Image } from "expo-image";
 import React, { useState } from "react";
 import {
   Linking,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -13,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Type definitions
 interface TicketLink {
@@ -215,6 +215,7 @@ interface EcranPrincipalProps {
 function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const insets = useSafeAreaInsets();
 
   // Filter events based on search query
   const filteredEvents = EVENIMENTE.filter((eveniment) =>
@@ -222,11 +223,11 @@ function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity
             style={styles.citySelector}
@@ -351,7 +352,7 @@ function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
           ))
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -361,6 +362,8 @@ interface EcranDetaliiProps {
 }
 
 function EcranDetalii({ eveniment, onBack }: EcranDetaliiProps) {
+  const insets = useSafeAreaInsets();
+
   const handleTicketPress = (url: string) => {
     Linking.openURL(url).catch((err) =>
       console.error("Couldn't load page", err)
@@ -368,11 +371,11 @@ function EcranDetalii({ eveniment, onBack }: EcranDetaliiProps) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" translucent />
 
       {/* Header detalii */}
-      <View style={styles.detailsHeader}>
+      <View style={[styles.detailsHeader, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <BackIcon />
         </TouchableOpacity>
@@ -476,7 +479,7 @@ function EcranDetalii({ eveniment, onBack }: EcranDetaliiProps) {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -508,6 +511,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 16,
+    position: "relative",
   },
   headerTop: {
     flexDirection: "row",
