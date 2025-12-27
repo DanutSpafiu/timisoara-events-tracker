@@ -2,6 +2,8 @@
 
 import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
+
+import { MaterialIcons } from "@expo/vector-icons";
 import {
   Linking,
   ScrollView,
@@ -48,7 +50,6 @@ const MapPinIcon = () => <Text style={styles.icon}>📍</Text>;
 const UserIcon = () => <Text style={styles.icon}>👤</Text>;
 const BackIcon = () => <Text style={styles.icon}>←</Text>;
 const ShareIcon = () => <Text style={styles.icon}>📤</Text>;
-const BookmarkIcon = () => <Text style={styles.icon}>🔖</Text>;
 
 // Date evenimente hardcodate
 const EVENIMENTE: Eveniment[] = [
@@ -216,9 +217,17 @@ const EVENIMENTE: Eveniment[] = [
 
 interface EcranPrincipalProps {
   onSelectEvent: (eveniment: Eveniment) => void;
+  savedEvents: Set<number>;
+  onToggleSave: (eventId: number) => void;
+  onNavigateToSaved: () => void;
 }
 
-function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
+function EcranPrincipal({
+  onSelectEvent,
+  savedEvents,
+  onToggleSave,
+  onNavigateToSaved,
+}: EcranPrincipalProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const insets = useSafeAreaInsets();
@@ -281,6 +290,12 @@ function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
         </View>
 
         <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={onNavigateToSaved}
+          >
+            <Text style={styles.savedIcon}>⭐</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
             <CalendarIcon />
           </TouchableOpacity>
@@ -323,8 +338,22 @@ function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
                 <View style={styles.categoryBadge}>
                   <Text style={styles.categoryText}>{eveniment.categorie}</Text>
                 </View>
-                <TouchableOpacity style={styles.bookmarkButton}>
-                  <BookmarkIcon />
+                <TouchableOpacity
+                  style={styles.bookmarkButton}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    onToggleSave(eveniment.id);
+                  }}
+                >
+                  <MaterialIcons
+                    name={
+                      savedEvents.has(eveniment.id)
+                        ? "bookmark"
+                        : "bookmark-border"
+                    }
+                    size={20}
+                    color={savedEvents.has(eveniment.id) ? "#FFD700" : "#FFF"}
+                  />
                 </TouchableOpacity>
               </View>
 
@@ -365,10 +394,18 @@ function EcranPrincipal({ onSelectEvent }: EcranPrincipalProps) {
 interface EcranDetaliiProps {
   eveniment: Eveniment;
   onBack: () => void;
+  savedEvents: Set<number>;
+  onToggleSave: (eventId: number) => void;
 }
 
-function EcranDetalii({ eveniment, onBack }: EcranDetaliiProps) {
+function EcranDetalii({
+  eveniment,
+  onBack,
+  savedEvents,
+  onToggleSave,
+}: EcranDetaliiProps) {
   const insets = useSafeAreaInsets();
+  const isSaved = savedEvents.has(eveniment.id);
 
   const handleTicketPress = (url: string) => {
     Linking.openURL(url).catch((err) =>
@@ -413,9 +450,23 @@ function EcranDetalii({ eveniment, onBack }: EcranDetaliiProps) {
               <ShareIcon />
               <Text style={styles.actionButtonText}>Share</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
-              <BookmarkIcon />
-              <Text style={styles.actionButtonText}>Salvează</Text>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => onToggleSave(eveniment.id)}
+            >
+              <MaterialIcons
+                name={isSaved ? "bookmark" : "bookmark-border"}
+                size={18}
+                color={isSaved ? "#FFD700" : "#666"}
+              />
+              <Text
+                style={[
+                  styles.actionButtonText,
+                  isSaved && styles.actionButtonTextSaved,
+                ]}
+              >
+                {isSaved ? "Salvat" : "Salvează"}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -489,27 +540,159 @@ function EcranDetalii({ eveniment, onBack }: EcranDetaliiProps) {
   );
 }
 
+function EcranSavedShows({
+  savedEvents,
+  onSelectEvent,
+  onBack,
+  onToggleSave,
+}: {
+  savedEvents: Set<number>;
+  onSelectEvent: (eveniment: Eveniment) => void;
+  onBack: () => void;
+  onToggleSave: (eventId: number) => void;
+}) {
+  const insets = useSafeAreaInsets();
+  const savedEventsList = EVENIMENTE.filter((e) => savedEvents.has(e.id));
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent />
+
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity onPress={onBack} style={styles.backButtonHeader}>
+            <BackIcon />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Evenimente Salvate</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+      </View>
+
+      {/* Lista evenimente salvate */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {savedEventsList.length === 0 ? (
+          <View style={styles.noResultsContainer}>
+            <Text style={styles.noResultsText}>
+              Nu ai evenimente salvate încă
+            </Text>
+            <Text style={styles.noResultsSubtext}>
+              Apasă pe 🔖 pentru a salva evenimente
+            </Text>
+          </View>
+        ) : (
+          savedEventsList.map((eveniment) => (
+            <TouchableOpacity
+              key={eveniment.id}
+              style={styles.evenimentCard}
+              onPress={() => onSelectEvent(eveniment)}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[
+                  styles.evenimentBanner,
+                  { backgroundColor: eveniment.culoare },
+                ]}
+              >
+                <Image
+                  source={{ uri: eveniment.imageUrl }}
+                  style={styles.evenimentBannerImage}
+                  contentFit="cover"
+                />
+                <View style={styles.bannerOverlay} />
+                <View style={styles.categoryBadge}>
+                  <Text style={styles.categoryText}>{eveniment.categorie}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.bookmarkButton}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    onToggleSave(eveniment.id);
+                  }}
+                >
+                  <MaterialIcons name="bookmark" size={20} color="#FFD700" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.evenimentContent}>
+                <Text style={styles.evenimentTitlu}>{eveniment.titlu}</Text>
+                <Text style={styles.evenimentDescriere}>
+                  {eveniment.descriere}
+                </Text>
+
+                <View style={styles.evenimentInfo}>
+                  <View style={styles.infoRow}>
+                    <CalendarIcon />
+                    <Text style={styles.infoText}>
+                      {eveniment.dataFormatata}
+                    </Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <ClockIcon />
+                    <Text style={styles.infoText}>{eveniment.ora}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <MapPinIcon />
+                  <Text style={[styles.infoText, styles.locatieText]}>
+                    {eveniment.locatie}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
 export default function App() {
   const [evenimentSelectat, setEvenimentSelectat] = useState<Eveniment | null>(
     null
   );
+  const [savedEvents, setSavedEvents] = useState<Set<number>>(new Set());
+  const [showSavedShows, setShowSavedShows] = useState(false);
 
   // Animation values for crossfade
   const listOpacity = useSharedValue(1);
   const detailsOpacity = useSharedValue(0);
+  const savedOpacity = useSharedValue(0);
+
+  const toggleSave = (eventId: number) => {
+    setSavedEvents((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(eventId)) {
+        newSet.delete(eventId);
+      } else {
+        newSet.add(eventId);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
-    if (evenimentSelectat) {
-      // Show details, hide list
+    if (showSavedShows && !evenimentSelectat) {
       listOpacity.value = withTiming(0, { duration: 200 });
+      detailsOpacity.value = withTiming(0, { duration: 200 });
+      savedOpacity.value = withTiming(1, { duration: 200 });
+    } else if (evenimentSelectat) {
+      // Show details, hide list and saved
+      listOpacity.value = withTiming(0, { duration: 200 });
+      savedOpacity.value = withTiming(0, { duration: 200 });
       detailsOpacity.value = withTiming(1, { duration: 200 });
     } else {
-      // Show list, hide details
+      // Show list, hide details and saved
       detailsOpacity.value = withTiming(0, { duration: 200 });
+      savedOpacity.value = withTiming(0, { duration: 200 });
       listOpacity.value = withTiming(1, { duration: 200 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [evenimentSelectat]);
+  }, [evenimentSelectat, showSavedShows]);
 
   const listAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -523,14 +706,45 @@ export default function App() {
     };
   });
 
+  const savedAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: savedOpacity.value,
+    };
+  });
+
   return (
     <View style={styles.container}>
-      {!evenimentSelectat && (
+      {!evenimentSelectat && !showSavedShows && (
         <Animated.View
           style={[StyleSheet.absoluteFill, listAnimatedStyle]}
           pointerEvents="auto"
         >
-          <EcranPrincipal onSelectEvent={setEvenimentSelectat} />
+          <EcranPrincipal
+            onSelectEvent={setEvenimentSelectat}
+            savedEvents={savedEvents}
+            onToggleSave={toggleSave}
+            onNavigateToSaved={() => setShowSavedShows(true)}
+          />
+        </Animated.View>
+      )}
+
+      {showSavedShows && !evenimentSelectat && (
+        <Animated.View
+          style={[StyleSheet.absoluteFill, savedAnimatedStyle]}
+          pointerEvents="auto"
+        >
+          <EcranSavedShows
+            savedEvents={savedEvents}
+            onSelectEvent={(event) => {
+              setShowSavedShows(false);
+              setEvenimentSelectat(event);
+            }}
+            onBack={() => {
+              setShowSavedShows(false);
+              setEvenimentSelectat(null);
+            }}
+            onToggleSave={toggleSave}
+          />
         </Animated.View>
       )}
 
@@ -541,7 +755,15 @@ export default function App() {
         >
           <EcranDetalii
             eveniment={evenimentSelectat}
-            onBack={() => setEvenimentSelectat(null)}
+            onBack={() => {
+              setEvenimentSelectat(null);
+              // If we were in saved shows, go back to it
+              if (savedEvents.has(evenimentSelectat.id)) {
+                setShowSavedShows(true);
+              }
+            }}
+            savedEvents={savedEvents}
+            onToggleSave={toggleSave}
           />
         </Animated.View>
       )}
@@ -670,6 +892,12 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
   },
+  noResultsSubtext: {
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
+    marginTop: 8,
+  },
   scrollView: {
     flex: 1,
   },
@@ -725,10 +953,20 @@ const styles = StyleSheet.create({
   bookmarkButton: {
     position: "absolute",
     bottom: 12,
-    left: 12,
+    right: 12,
     backgroundColor: "rgba(0,0,0,0.3)",
     padding: 8,
     borderRadius: 8,
+  },
+  savedIcon: {
+    fontSize: 20,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  backButtonHeader: {
+    padding: 8,
+    marginRight: 8,
   },
   evenimentContent: {
     padding: 16,
@@ -818,6 +1056,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
     color: "#666",
+  },
+  actionButtonTextSaved: {
+    color: "#FFD700",
   },
   infoBox: {
     backgroundColor: "#F8F9FA",
