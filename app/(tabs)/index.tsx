@@ -294,7 +294,7 @@ function EcranPrincipal({
             style={styles.iconButton}
             onPress={onNavigateToSaved}
           >
-            <Text style={styles.savedIcon}>⭐</Text>
+            <MaterialIcons name="bookmark" size={20} color="#FFD700" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
             <CalendarIcon />
@@ -580,7 +580,7 @@ function EcranSavedShows({
               Nu ai evenimente salvate încă
             </Text>
             <Text style={styles.noResultsSubtext}>
-              Apasă pe 🔖 pentru a salva evenimente
+              Apasă pe <MaterialIcons name="bookmark" size={20} color="#FFD700" /> pentru a salva evenimente
             </Text>
           </View>
         ) : (
@@ -957,9 +957,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.3)",
     padding: 8,
     borderRadius: 8,
-  },
-  savedIcon: {
-    fontSize: 20,
   },
   headerSpacer: {
     width: 40,
