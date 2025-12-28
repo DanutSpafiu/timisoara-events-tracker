@@ -214,6 +214,26 @@ const EVENIMENTE: Eveniment[] = [
       { nume: "MyTicket", url: "https://www.myticket.ro" },
     ],
   },
+  {
+    id: 8,
+    titlu: "Concert Clasic: Orchestra Filarmonicii de Stat Timișoara",
+    descriere: "Simfonia nr. 9 de Beethoven",
+    data: "2026-02-25",
+    dataFormatata: "mie., 25 feb. 2026",
+    ora: "19:30",
+    locatie: "Filarmonica de Stat, Piața Victoriei 1, Timișoara",
+    categorie: "Muzică",
+    culoare: "#2d3748",
+    imageUrl:
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop",
+    detalii:
+      "O seară memorabilă cu Orchestra Filarmonicii de Stat Timișoara, prezentând Simfonia nr. 9 de Ludwig van Beethoven. Dirijor: maestro Cristian Mandeal. Un eveniment de neuitat pentru iubitorii de muzică clasică.",
+    linkuriTickets: [
+      { nume: "iaBilet", url: "https://www.iabilet.ro" },
+      { nume: "Eventim", url: "https://www.eventim.ro" },
+      { nume: "MyTicket", url: "https://www.myticket.ro" },
+    ],
+  },
 ];
 
 interface EcranPrincipalProps {
@@ -760,15 +780,51 @@ function EcranDatePicker({
   onBack,
   selectedDates,
   onToggleDate,
+  onClearAll,
 }: {
   onBack: () => void;
   selectedDates: Set<string>;
   onToggleDate: (date: string) => void;
+  onClearAll: () => void;
 }) {
   const insets = useSafeAreaInsets();
 
   // Get all unique dates that have events
   const eventDates = new Set(EVENIMENTE.map((e) => e.data));
+
+  // Format date to Romanian format (e.g., "mie., 14 ian. 2026")
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString + "T00:00:00"); // Add time to avoid timezone issues
+    const dayNames = ["dum.", "lun.", "mar.", "mie.", "joi", "vin.", "sâm."];
+    const monthNames = [
+      "ian.",
+      "feb.",
+      "mar.",
+      "apr.",
+      "mai",
+      "iun.",
+      "iul.",
+      "aug.",
+      "sept.",
+      "oct.",
+      "nov.",
+      "dec.",
+    ];
+    const dayName = dayNames[date.getDay()];
+    const day = date.getDate();
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    // Format: "mie., 14 ian. 2026" (matches the image format)
+    return `${dayName} ${day} ${month} ${year}`;
+  };
+
+  // Count events for a specific date
+  const getEventCount = (dateString: string): number => {
+    return EVENIMENTE.filter((e) => e.data === dateString).length;
+  };
+
+  // Convert selectedDates Set to sorted array
+  const selectedDatesArray = Array.from(selectedDates).sort();
 
   return (
     <View style={styles.container}>
@@ -780,7 +836,15 @@ function EcranDatePicker({
           <TouchableOpacity onPress={onBack} style={styles.backButtonHeader}>
             <BackIcon />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Filtrează după dată</Text>
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.headerTitle}>Filtrează după dată</Text>
+            {selectedDates.size > 0 && (
+              <Text style={styles.headerSubtitle}>
+                ({selectedDates.size}{" "}
+                {selectedDates.size === 1 ? "zi selectată" : "zile selectate"})
+              </Text>
+            )}
+          </View>
           <TouchableOpacity onPress={onBack} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
@@ -854,6 +918,38 @@ function EcranDatePicker({
             />
           </View>
         </View>
+
+        {/* Selected Dates Section */}
+        {selectedDates.size > 0 && (
+          <View style={styles.selectedDatesSection}>
+            <View style={styles.selectedDatesContainer}>
+              {selectedDatesArray.map((dateString) => {
+                const eventCount = getEventCount(dateString);
+                return (
+                  <View key={dateString} style={styles.selectedDateChip}>
+                    <Text style={styles.selectedDateText}>
+                      {formatDate(dateString)} ({eventCount}{" "}
+                      {eventCount === 1 ? "ev." : "ev."})
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => onToggleDate(dateString)}
+                      style={styles.chipRemoveButton}
+                    >
+                      <Text style={styles.chipRemoveIcon}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+            <TouchableOpacity
+              onPress={onClearAll}
+              style={styles.clearAllButton}
+            >
+              <Text style={styles.clearAllIcon}>✕</Text>
+              <Text style={styles.clearAllText}>Șterge toate datele</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -1037,6 +1133,7 @@ export default function App() {
               onBack={() => setShowDatePicker(false)}
               selectedDates={selectedDates}
               onToggleDate={toggleDate}
+              onClearAll={() => setSelectedDates(new Set())}
             />
           </Animated.View>
         )}
@@ -1552,5 +1649,61 @@ const styles = StyleSheet.create({
   },
   calendarDayTextDisabled: {
     color: "#CCC",
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: "center",
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "rgba(255, 255, 255, 0.8)",
+    marginTop: 4,
+  },
+  selectedDatesSection: {
+    padding: 16,
+    backgroundColor: "#FFF",
+  },
+  selectedDatesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 16,
+  },
+  selectedDateChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 8,
+  },
+  selectedDateText: {
+    fontSize: 14,
+    color: "#333",
+    fontWeight: "500",
+  },
+  chipRemoveButton: {
+    padding: 4,
+  },
+  chipRemoveIcon: {
+    fontSize: 16,
+    color: "#666",
+    fontWeight: "bold",
+  },
+  clearAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  clearAllIcon: {
+    fontSize: 16,
+    color: "#EF4444",
+    fontWeight: "bold",
+  },
+  clearAllText: {
+    fontSize: 14,
+    color: "#EF4444",
+    fontWeight: "500",
   },
 });
