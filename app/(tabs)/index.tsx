@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Calendar } from "react-native-calendars";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -220,6 +221,9 @@ interface EcranPrincipalProps {
   savedEvents: Set<number>;
   onToggleSave: (eventId: number) => void;
   onNavigateToSaved: () => void;
+  onNavigateToFilter: () => void;
+  onNavigateToDatePicker: () => void;
+  filteredEvents: Eveniment[];
 }
 
 function EcranPrincipal({
@@ -227,13 +231,16 @@ function EcranPrincipal({
   savedEvents,
   onToggleSave,
   onNavigateToSaved,
+  onNavigateToFilter,
+  onNavigateToDatePicker,
+  filteredEvents: filteredEventsProp,
 }: EcranPrincipalProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const insets = useSafeAreaInsets();
 
-  // Filter events based on search query
-  const filteredEvents = EVENIMENTE.filter((eveniment) =>
+  // Filter events based on search query and applied filters
+  const filteredEvents = filteredEventsProp.filter((eveniment) =>
     eveniment.titlu.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -296,7 +303,17 @@ function EcranPrincipal({
           >
             <MaterialIcons name="bookmark" size={20} color="#FFD700" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={onNavigateToFilter}
+          >
+            <MaterialIcons name="tune" size={20} color="#FFF" />
+            <Text style={styles.filterButtonText}>Filtrează</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={onNavigateToDatePicker}
+          >
             <CalendarIcon />
           </TouchableOpacity>
         </View>
@@ -580,7 +597,9 @@ function EcranSavedShows({
               Nu ai evenimente salvate încă
             </Text>
             <Text style={styles.noResultsSubtext}>
-              Apasă pe <MaterialIcons name="bookmark" size={20} color="#FFD700" /> pentru a salva evenimente
+              Apasă pe{" "}
+              <MaterialIcons name="bookmark" size={20} color="#FFD700" /> pentru
+              a salva evenimente
             </Text>
           </View>
         ) : (
@@ -651,17 +670,214 @@ function EcranSavedShows({
   );
 }
 
+function EcranFilter({
+  onBack,
+  selectedCategories,
+  onToggleCategory,
+}: {
+  onBack: () => void;
+  selectedCategories: Set<string>;
+  onToggleCategory: (category: string) => void;
+}) {
+  const insets = useSafeAreaInsets();
+
+  // Category icons mapping
+  const categoryIcons: Record<string, string> = {
+    Muzică: "🎵",
+    Teatru: "🎭",
+    Artă: "🎨",
+    Film: "🎬",
+    Gastronomie: "🍴",
+    Conferință: "👥",
+    Sport: "🏆",
+  };
+
+  const categories = [
+    "Muzică",
+    "Teatru",
+    "Artă",
+    "Film",
+    "Gastronomie",
+    "Conferință",
+    "Sport",
+  ];
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent />
+
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerTop}>
+          <View style={styles.headerSpacer} />
+          <Text style={styles.headerTitle}>Filtrează</Text>
+          <TouchableOpacity onPress={onBack} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView style={styles.scrollView}>
+        {/* Category Filter Section */}
+        <View style={styles.filterSection}>
+          <Text style={styles.filterSectionTitle}>
+            Filtrează după categorie
+          </Text>
+          <View style={styles.categoryButtons}>
+            {categories.map((category) => {
+              const isSelected = selectedCategories.has(category);
+              return (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.categoryButton,
+                    isSelected && styles.categoryButtonSelected,
+                  ]}
+                  onPress={() => onToggleCategory(category)}
+                >
+                  <Text style={styles.categoryIcon}>
+                    {categoryIcons[category] || "•"}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.categoryButtonText,
+                      isSelected && styles.categoryButtonTextSelected,
+                    ]}
+                  >
+                    {category}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+function EcranDatePicker({
+  onBack,
+  selectedDates,
+  onToggleDate,
+}: {
+  onBack: () => void;
+  selectedDates: Set<string>;
+  onToggleDate: (date: string) => void;
+}) {
+  const insets = useSafeAreaInsets();
+
+  // Get all unique dates that have events
+  const eventDates = new Set(EVENIMENTE.map((e) => e.data));
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent />
+
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity onPress={onBack} style={styles.backButtonHeader}>
+            <BackIcon />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Filtrează după dată</Text>
+          <TouchableOpacity onPress={onBack} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.filterSection}>
+          <View style={styles.calendarContainer}>
+            <Calendar
+              minDate={new Date().toISOString().split("T")[0]}
+              theme={{
+                backgroundColor: "#FFF",
+                calendarBackground: "#FFF",
+                textSectionTitleColor: "#999",
+                selectedDayBackgroundColor: "#5B7FFF",
+                selectedDayTextColor: "#FFF",
+                todayTextColor: "#5B7FFF",
+                dayTextColor: "#999", // Gray for dates without events (default)
+                textDisabledColor: "#CCC",
+                dotColor: "#5B7FFF",
+                selectedDotColor: "#FFF",
+                arrowColor: "#5B7FFF",
+                monthTextColor: "#333",
+                textDayFontWeight: "400",
+                textMonthFontWeight: "bold",
+                textDayHeaderFontWeight: "600",
+                textDayFontSize: 16,
+                textMonthFontSize: 18,
+                textDayHeaderFontSize: 13,
+              }}
+              style={styles.calendar}
+              dayComponent={({ date, state }: any) => {
+                const dateStr = date?.dateString;
+                const hasEvent = eventDates.has(dateStr);
+                const isSelected = selectedDates.has(dateStr);
+                const isToday =
+                  dateStr === new Date().toISOString().split("T")[0];
+
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.calendarDayContainer,
+                      isSelected && styles.calendarDaySelected,
+                      state === "disabled" && styles.calendarDayDisabled,
+                    ]}
+                    onPress={() => {
+                      if (hasEvent && state !== "disabled") {
+                        onToggleDate(dateStr);
+                      }
+                    }}
+                    disabled={!hasEvent || state === "disabled"}
+                  >
+                    <Text
+                      style={[
+                        styles.calendarDayText,
+                        hasEvent && styles.calendarDayTextWithEvent,
+                        isSelected && styles.calendarDayTextSelected,
+                        isToday &&
+                          !hasEvent &&
+                          !isSelected &&
+                          styles.calendarDayTextToday,
+                        state === "disabled" && styles.calendarDayTextDisabled,
+                      ]}
+                    >
+                      {date?.day}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
 export default function App() {
   const [evenimentSelectat, setEvenimentSelectat] = useState<Eveniment | null>(
     null
   );
   const [savedEvents, setSavedEvents] = useState<Set<number>>(new Set());
   const [showSavedShows, setShowSavedShows] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
+    new Set()
+  );
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
 
   // Animation values for crossfade
   const listOpacity = useSharedValue(1);
   const detailsOpacity = useSharedValue(0);
   const savedOpacity = useSharedValue(0);
+  const filterOpacity = useSharedValue(0);
+  const datePickerOpacity = useSharedValue(0);
 
   const toggleSave = (eventId: number) => {
     setSavedEvents((prev) => {
@@ -676,23 +892,46 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (showSavedShows && !evenimentSelectat) {
+    if (
+      showDatePicker &&
+      !evenimentSelectat &&
+      !showSavedShows &&
+      !showFilter
+    ) {
       listOpacity.value = withTiming(0, { duration: 200 });
       detailsOpacity.value = withTiming(0, { duration: 200 });
+      savedOpacity.value = withTiming(0, { duration: 200 });
+      filterOpacity.value = withTiming(0, { duration: 200 });
+      datePickerOpacity.value = withTiming(1, { duration: 200 });
+    } else if (showFilter && !evenimentSelectat && !showSavedShows) {
+      listOpacity.value = withTiming(0, { duration: 200 });
+      detailsOpacity.value = withTiming(0, { duration: 200 });
+      savedOpacity.value = withTiming(0, { duration: 200 });
+      datePickerOpacity.value = withTiming(0, { duration: 200 });
+      filterOpacity.value = withTiming(1, { duration: 200 });
+    } else if (showSavedShows && !evenimentSelectat) {
+      listOpacity.value = withTiming(0, { duration: 200 });
+      detailsOpacity.value = withTiming(0, { duration: 200 });
+      filterOpacity.value = withTiming(0, { duration: 200 });
+      datePickerOpacity.value = withTiming(0, { duration: 200 });
       savedOpacity.value = withTiming(1, { duration: 200 });
     } else if (evenimentSelectat) {
       // Show details, hide list and saved
       listOpacity.value = withTiming(0, { duration: 200 });
       savedOpacity.value = withTiming(0, { duration: 200 });
+      filterOpacity.value = withTiming(0, { duration: 200 });
+      datePickerOpacity.value = withTiming(0, { duration: 200 });
       detailsOpacity.value = withTiming(1, { duration: 200 });
     } else {
       // Show list, hide details and saved
       detailsOpacity.value = withTiming(0, { duration: 200 });
       savedOpacity.value = withTiming(0, { duration: 200 });
+      filterOpacity.value = withTiming(0, { duration: 200 });
+      datePickerOpacity.value = withTiming(0, { duration: 200 });
       listOpacity.value = withTiming(1, { duration: 200 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [evenimentSelectat, showSavedShows]);
+  }, [evenimentSelectat, showSavedShows, showFilter, showDatePicker]);
 
   const listAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -712,21 +951,111 @@ export default function App() {
     };
   });
 
+  const filterAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: filterOpacity.value,
+    };
+  });
+
+  const datePickerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: datePickerOpacity.value,
+    };
+  });
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleDate = (date: string) => {
+    setSelectedDates((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(date)) {
+        newSet.delete(date);
+      } else {
+        newSet.add(date);
+      }
+      return newSet;
+    });
+  };
+
+  // Apply filters to events
+  const filteredEvents = EVENIMENTE.filter((event) => {
+    // Category filter
+    if (
+      selectedCategories.size > 0 &&
+      !selectedCategories.has(event.categorie)
+    ) {
+      return false;
+    }
+    // Date filter - show events from all selected dates
+    if (selectedDates.size > 0 && !selectedDates.has(event.data)) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <View style={styles.container}>
-      {!evenimentSelectat && !showSavedShows && (
-        <Animated.View
-          style={[StyleSheet.absoluteFill, listAnimatedStyle]}
-          pointerEvents="auto"
-        >
-          <EcranPrincipal
-            onSelectEvent={setEvenimentSelectat}
-            savedEvents={savedEvents}
-            onToggleSave={toggleSave}
-            onNavigateToSaved={() => setShowSavedShows(true)}
-          />
-        </Animated.View>
-      )}
+      {!evenimentSelectat &&
+        !showSavedShows &&
+        !showFilter &&
+        !showDatePicker && (
+          <Animated.View
+            style={[StyleSheet.absoluteFill, listAnimatedStyle]}
+            pointerEvents="auto"
+          >
+            <EcranPrincipal
+              onSelectEvent={setEvenimentSelectat}
+              savedEvents={savedEvents}
+              onToggleSave={toggleSave}
+              onNavigateToSaved={() => setShowSavedShows(true)}
+              onNavigateToFilter={() => setShowFilter(true)}
+              onNavigateToDatePicker={() => setShowDatePicker(true)}
+              filteredEvents={filteredEvents}
+            />
+          </Animated.View>
+        )}
+
+      {showDatePicker &&
+        !evenimentSelectat &&
+        !showSavedShows &&
+        !showFilter && (
+          <Animated.View
+            style={[StyleSheet.absoluteFill, datePickerAnimatedStyle]}
+            pointerEvents="auto"
+          >
+            <EcranDatePicker
+              onBack={() => setShowDatePicker(false)}
+              selectedDates={selectedDates}
+              onToggleDate={toggleDate}
+            />
+          </Animated.View>
+        )}
+
+      {showFilter &&
+        !evenimentSelectat &&
+        !showSavedShows &&
+        !showDatePicker && (
+          <Animated.View
+            style={[StyleSheet.absoluteFill, filterAnimatedStyle]}
+            pointerEvents="auto"
+          >
+            <EcranFilter
+              onBack={() => setShowFilter(false)}
+              selectedCategories={selectedCategories}
+              onToggleCategory={toggleCategory}
+            />
+          </Animated.View>
+        )}
 
       {showSavedShows && !evenimentSelectat && (
         <Animated.View
@@ -1118,5 +1447,110 @@ const styles = StyleSheet.create({
   ticketButtonArrow: {
     fontSize: 20,
     color: "#FFF",
+  },
+  filterButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    padding: 12,
+    borderRadius: 12,
+  },
+  filterButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  closeButton: {
+    padding: 8,
+  },
+  closeButtonText: {
+    color: "#FFF",
+    fontSize: 24,
+    fontWeight: "300",
+  },
+  filterSection: {
+    padding: 16,
+    backgroundColor: "#FFF",
+    marginBottom: 16,
+  },
+  filterSectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  categoryButtons: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    justifyContent: "center",
+  },
+  categoryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#F5F5F5",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
+    minWidth: 100,
+    justifyContent: "center",
+  },
+  categoryButtonSelected: {
+    backgroundColor: "#5B7FFF",
+  },
+  categoryIcon: {
+    fontSize: 18,
+  },
+  categoryButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+  },
+  categoryButtonTextSelected: {
+    color: "#FFF",
+  },
+  calendarContainer: {
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  calendar: {
+    borderRadius: 12,
+  },
+  calendarDayContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 36,
+    borderRadius: 18,
+  },
+  calendarDaySelected: {
+    backgroundColor: "#5B7FFF",
+  },
+  calendarDayDisabled: {
+    opacity: 0.3,
+  },
+  calendarDayText: {
+    fontSize: 16,
+    color: "#999", // Gray for dates without events
+    fontWeight: "400",
+  },
+  calendarDayTextWithEvent: {
+    color: "#333", // Black for dates with events
+    fontWeight: "bold",
+  },
+  calendarDayTextSelected: {
+    color: "#FFF",
+    fontWeight: "bold",
+  },
+  calendarDayTextToday: {
+    color: "#5B7FFF",
+  },
+  calendarDayTextDisabled: {
+    color: "#CCC",
   },
 });
