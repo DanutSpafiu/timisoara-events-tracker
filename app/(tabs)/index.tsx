@@ -256,6 +256,7 @@ function EcranPrincipal({
   filteredEvents: filteredEventsProp,
 }: EcranPrincipalProps) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const insets = useSafeAreaInsets();
 
@@ -278,10 +279,84 @@ function EcranPrincipal({
             <Text style={styles.headerTitle}>Evenimente în Timișoara</Text>
             <Text style={styles.chevron}>{showDropdown ? "▲" : "▼"}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.profileButton}>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => {
+              setShowProfileMenu(!showProfileMenu);
+              setShowDropdown(false);
+            }}
+          >
             <UserIcon />
           </TouchableOpacity>
         </View>
+
+        {/* Profile Menu Dropdown */}
+        {showProfileMenu && (
+          <>
+            <TouchableOpacity
+              style={styles.profileMenuOverlay}
+              activeOpacity={1}
+              onPress={() => setShowProfileMenu(false)}
+            />
+            <View style={styles.profileMenu}>
+              <TouchableOpacity
+                style={styles.profileMenuItem}
+                onPress={() => {
+                  setShowProfileMenu(false);
+                }}
+              >
+                <View style={styles.profileMenuItemContent}>
+                  <Text style={styles.profileMenuItemTitle}>Contul meu</Text>
+                  <Text style={styles.profileMenuItemSubtitle}>User</Text>
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.profileMenuDivider} />
+
+              <TouchableOpacity
+                style={styles.profileMenuItem}
+                onPress={() => {
+                  setShowProfileMenu(false);
+                  onNavigateToSaved();
+                }}
+              >
+                <MaterialIcons
+                  name="bookmark-border"
+                  size={20}
+                  color="#333"
+                  style={styles.profileMenuItemIcon}
+                />
+                <View style={styles.profileMenuItemContent}>
+                  <Text style={styles.profileMenuItemTitle}>
+                    Evenimente salvate
+                  </Text>
+                  <Text style={styles.profileMenuItemSubtitle}>
+                    {savedEvents.size}{" "}
+                    {savedEvents.size === 1 ? "eveniment" : "evenimente"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.profileMenuDivider} />
+
+              <TouchableOpacity
+                style={styles.profileMenuItem}
+                onPress={() => {
+                  setShowProfileMenu(false);
+                  // Handle logout
+                }}
+              >
+                <MaterialIcons
+                  name="exit-to-app"
+                  size={20}
+                  color="#EF4444"
+                  style={styles.profileMenuItemIcon}
+                />
+                <Text style={styles.profileMenuItemTitleLogout}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         {showDropdown && (
           <View style={styles.dropdown}>
@@ -317,12 +392,6 @@ function EcranPrincipal({
         </View>
 
         <View style={styles.headerButtons}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={onNavigateToSaved}
-          >
-            <MaterialIcons name="bookmark" size={20} color="#FFD700" />
-          </TouchableOpacity>
           <TouchableOpacity
             style={styles.filterButton}
             onPress={onNavigateToFilter}
@@ -1235,6 +1304,61 @@ const styles = StyleSheet.create({
   },
   profileButton: {
     padding: 8,
+  },
+  profileMenuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+  },
+  profileMenu: {
+    position: "absolute",
+    top: 60,
+    right: 16,
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    paddingVertical: 8,
+    minWidth: 240,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 1000,
+  },
+  profileMenuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  profileMenuItemIcon: {
+    marginRight: 12,
+  },
+  profileMenuItemContent: {
+    flex: 1,
+  },
+  profileMenuItemTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  profileMenuItemSubtitle: {
+    fontSize: 14,
+    color: "#999",
+  },
+  profileMenuItemTitleLogout: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#EF4444",
+  },
+  profileMenuDivider: {
+    height: 1,
+    backgroundColor: "#E5E5E5",
+    marginVertical: 4,
   },
   dropdown: {
     backgroundColor: "#FFF",
