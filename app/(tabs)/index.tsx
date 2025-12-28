@@ -1024,7 +1024,55 @@ function EcranDatePicker({
   );
 }
 
+function EcranLogin({ onLogin }: { onLogin: () => void }) {
+  return (
+    <View style={styles.loginContainer}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.loginContent}>
+        {/* Logo */}
+        <View style={styles.logoContainer}>
+          <Text style={styles.logoText}>👤</Text>
+        </View>
+
+        {/* Subtitle */}
+        <Text style={styles.loginSubtitle}>
+          Descoperă evenimente culturale în orașul tău
+        </Text>
+
+        {/* Social Login Buttons */}
+        <View style={styles.loginButtonsContainer}>
+          {/* Google Button */}
+          <TouchableOpacity style={styles.googleButton} onPress={onLogin}>
+            <Text style={styles.googleIcon}>G</Text>
+            <Text style={styles.googleButtonText}>Continuă cu Google</Text>
+          </TouchableOpacity>
+
+          {/* Apple Button */}
+          <TouchableOpacity style={styles.appleButton} onPress={onLogin}>
+            <MaterialIcons name="apple" size={24} color="#FFF" />
+            <Text style={styles.appleButtonText}>Continuă cu Apple</Text>
+          </TouchableOpacity>
+
+          {/* Facebook Button */}
+          <TouchableOpacity style={styles.facebookButton} onPress={onLogin}>
+            <Text style={styles.facebookIcon}>f</Text>
+            <Text style={styles.facebookButtonText}>Continuă cu Facebook</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Terms and Conditions */}
+        <Text style={styles.termsText}>
+          Continuând, accepți{" "}
+          <Text style={styles.termsLink}>Termenii și Condițiile</Text> și{" "}
+          <Text style={styles.termsLink}>Politica de Confidențialitate</Text>
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [evenimentSelectat, setEvenimentSelectat] = useState<Eveniment | null>(
     null
   );
@@ -1167,6 +1215,11 @@ export default function App() {
     }
     return true;
   });
+
+  // Show login screen if not logged in
+  if (!isLoggedIn) {
+    return <EcranLogin onLogin={() => setIsLoggedIn(true)} />;
+  }
 
   return (
     <View style={styles.container}>
@@ -1829,5 +1882,111 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#EF4444",
     fontWeight: "500",
+  },
+  loginContainer: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loginContent: {
+    backgroundColor: "#FFF",
+    borderRadius: 16,
+    padding: 32,
+    width: "100%",
+    maxWidth: 400,
+    alignItems: "center",
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  logoText: {
+    fontSize: 48,
+  },
+  loginSubtitle: {
+    fontSize: 16,
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 32,
+    lineHeight: 24,
+  },
+  loginButtonsContainer: {
+    width: "100%",
+    gap: 16,
+    marginBottom: 24,
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFF",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  googleIcon: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#4285F4",
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+  },
+  appleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#000",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  appleButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#FFF",
+  },
+  facebookButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1877F2",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  facebookIcon: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#FFF",
+  },
+  facebookButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#FFF",
+  },
+  termsText: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 18,
+  },
+  termsLink: {
+    color: "#1877F2",
+    textDecorationLine: "underline",
   },
 });
