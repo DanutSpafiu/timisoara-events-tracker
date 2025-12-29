@@ -3,6 +3,10 @@ import { sharedStyles } from "./sharedStyles";
 
 export const filterStyles = StyleSheet.create({
   ...sharedStyles,
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: "center",
+  },
   filterSection: {
     padding: 16,
     backgroundColor: "#FFF",

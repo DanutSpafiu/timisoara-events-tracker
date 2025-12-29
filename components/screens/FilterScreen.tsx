@@ -1,6 +1,7 @@
 import React from "react";
 import { ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BackIcon } from "@/components/icons";
 import { filterStyles } from "./styles/filterStyles";
 
 interface FilterScreenProps {
@@ -44,8 +45,12 @@ export function FilterScreen({
       {/* Header */}
       <View style={[filterStyles.header, { paddingTop: insets.top }]}>
         <View style={filterStyles.headerTop}>
-          <View style={filterStyles.headerSpacer} />
-          <Text style={filterStyles.headerTitle}>Filtrează</Text>
+          <TouchableOpacity onPress={onBack} style={filterStyles.backButtonHeader}>
+            <BackIcon />
+          </TouchableOpacity>
+          <View style={filterStyles.headerTitleContainer}>
+            <Text style={filterStyles.headerTitle}>Filtrează</Text>
+          </View>
           <TouchableOpacity onPress={onBack} style={filterStyles.closeButton}>
             <Text style={filterStyles.closeButtonText}>✕</Text>
           </TouchableOpacity>
