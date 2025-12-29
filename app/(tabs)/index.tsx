@@ -3,6 +3,7 @@ import { EventDetailScreen } from "@/components/screens/EventDetailScreen";
 import { EventListScreen } from "@/components/screens/EventListScreen";
 import { FilterScreen } from "@/components/screens/FilterScreen";
 import { LoginScreen } from "@/components/screens/LoginScreen";
+import { ProfileEditorScreen } from "@/components/screens/ProfileEditorScreen";
 import { SavedShowsScreen } from "@/components/screens/SavedShowsScreen";
 import { EVENIMENTE } from "@/constants/events";
 import { useAppState } from "@/hooks/useAppState";
@@ -22,14 +23,22 @@ export default function App() {
     showSavedShows,
     showFilter,
     showDatePicker,
+    showProfileEditor,
     selectedCategories,
     selectedDates,
+    userName,
+    profilePicture,
+    userInterests,
     setIsLoggedIn,
     setEvenimentSelectat,
     setShowSavedShows,
     setShowFilter,
     setShowDatePicker,
+    setShowProfileEditor,
     setSelectedDates,
+    setUserName,
+    setProfilePicture,
+    setUserInterests,
     toggleSave,
     toggleCategory,
     toggleDate,
@@ -41,48 +50,79 @@ export default function App() {
   const savedOpacity = useSharedValue(0);
   const filterOpacity = useSharedValue(0);
   const datePickerOpacity = useSharedValue(0);
+  const profileEditorOpacity = useSharedValue(0);
 
   useEffect(() => {
     if (
-      showDatePicker &&
+      showProfileEditor &&
       !evenimentSelectat &&
       !showSavedShows &&
-      !showFilter
+      !showFilter &&
+      !showDatePicker
     ) {
       listOpacity.value = withTiming(0, { duration: 200 });
       detailsOpacity.value = withTiming(0, { duration: 200 });
       savedOpacity.value = withTiming(0, { duration: 200 });
       filterOpacity.value = withTiming(0, { duration: 200 });
+      datePickerOpacity.value = withTiming(0, { duration: 200 });
+      profileEditorOpacity.value = withTiming(1, { duration: 200 });
+    } else if (
+      showDatePicker &&
+      !evenimentSelectat &&
+      !showSavedShows &&
+      !showFilter &&
+      !showProfileEditor
+    ) {
+      listOpacity.value = withTiming(0, { duration: 200 });
+      detailsOpacity.value = withTiming(0, { duration: 200 });
+      savedOpacity.value = withTiming(0, { duration: 200 });
+      filterOpacity.value = withTiming(0, { duration: 200 });
+      profileEditorOpacity.value = withTiming(0, { duration: 200 });
       datePickerOpacity.value = withTiming(1, { duration: 200 });
-    } else if (showFilter && !evenimentSelectat && !showSavedShows) {
+    } else if (
+      showFilter &&
+      !evenimentSelectat &&
+      !showSavedShows &&
+      !showProfileEditor
+    ) {
       listOpacity.value = withTiming(0, { duration: 200 });
       detailsOpacity.value = withTiming(0, { duration: 200 });
       savedOpacity.value = withTiming(0, { duration: 200 });
       datePickerOpacity.value = withTiming(0, { duration: 200 });
+      profileEditorOpacity.value = withTiming(0, { duration: 200 });
       filterOpacity.value = withTiming(1, { duration: 200 });
-    } else if (showSavedShows && !evenimentSelectat) {
+    } else if (showSavedShows && !evenimentSelectat && !showProfileEditor) {
       listOpacity.value = withTiming(0, { duration: 200 });
       detailsOpacity.value = withTiming(0, { duration: 200 });
       filterOpacity.value = withTiming(0, { duration: 200 });
       datePickerOpacity.value = withTiming(0, { duration: 200 });
+      profileEditorOpacity.value = withTiming(0, { duration: 200 });
       savedOpacity.value = withTiming(1, { duration: 200 });
-    } else if (evenimentSelectat) {
+    } else if (evenimentSelectat && !showProfileEditor) {
       // Show details, hide list and saved
       listOpacity.value = withTiming(0, { duration: 200 });
       savedOpacity.value = withTiming(0, { duration: 200 });
       filterOpacity.value = withTiming(0, { duration: 200 });
       datePickerOpacity.value = withTiming(0, { duration: 200 });
+      profileEditorOpacity.value = withTiming(0, { duration: 200 });
       detailsOpacity.value = withTiming(1, { duration: 200 });
-    } else {
+    } else if (!showProfileEditor) {
       // Show list, hide details and saved
       detailsOpacity.value = withTiming(0, { duration: 200 });
       savedOpacity.value = withTiming(0, { duration: 200 });
       filterOpacity.value = withTiming(0, { duration: 200 });
       datePickerOpacity.value = withTiming(0, { duration: 200 });
+      profileEditorOpacity.value = withTiming(0, { duration: 200 });
       listOpacity.value = withTiming(1, { duration: 200 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [evenimentSelectat, showSavedShows, showFilter, showDatePicker]);
+  }, [
+    evenimentSelectat,
+    showSavedShows,
+    showFilter,
+    showDatePicker,
+    showProfileEditor,
+  ]);
 
   const listAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -114,6 +154,12 @@ export default function App() {
     };
   });
 
+  const profileEditorAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: profileEditorOpacity.value,
+    };
+  });
+
   // Apply filters to events
   const filteredEvents = EVENIMENTE.filter((event) => {
     // Category filter
@@ -135,12 +181,23 @@ export default function App() {
     return <LoginScreen onLogin={() => setIsLoggedIn(true)} />;
   }
 
+  const handleProfileSave = (
+    name: string,
+    picture: string | null,
+    interests: Set<string>
+  ) => {
+    setUserName(name);
+    setProfilePicture(picture);
+    setUserInterests(interests);
+  };
+
   return (
     <View style={styles.container}>
       {!evenimentSelectat &&
         !showSavedShows &&
         !showFilter &&
-        !showDatePicker && (
+        !showDatePicker &&
+        !showProfileEditor && (
           <Animated.View
             style={[StyleSheet.absoluteFill, listAnimatedStyle]}
             pointerEvents="auto"
@@ -152,7 +209,28 @@ export default function App() {
               onNavigateToSaved={() => setShowSavedShows(true)}
               onNavigateToFilter={() => setShowFilter(true)}
               onNavigateToDatePicker={() => setShowDatePicker(true)}
+              onNavigateToProfileEditor={() => setShowProfileEditor(true)}
+              userName={userName}
               filteredEvents={filteredEvents}
+            />
+          </Animated.View>
+        )}
+
+      {showProfileEditor &&
+        !evenimentSelectat &&
+        !showSavedShows &&
+        !showFilter &&
+        !showDatePicker && (
+          <Animated.View
+            style={[StyleSheet.absoluteFill, profileEditorAnimatedStyle]}
+            pointerEvents="auto"
+          >
+            <ProfileEditorScreen
+              onBack={() => setShowProfileEditor(false)}
+              userName={userName}
+              profilePicture={profilePicture}
+              userInterests={userInterests}
+              onSave={handleProfileSave}
             />
           </Animated.View>
         )}
@@ -160,7 +238,8 @@ export default function App() {
       {showDatePicker &&
         !evenimentSelectat &&
         !showSavedShows &&
-        !showFilter && (
+        !showFilter &&
+        !showProfileEditor && (
           <Animated.View
             style={[StyleSheet.absoluteFill, datePickerAnimatedStyle]}
             pointerEvents="auto"
@@ -177,7 +256,8 @@ export default function App() {
       {showFilter &&
         !evenimentSelectat &&
         !showSavedShows &&
-        !showDatePicker && (
+        !showDatePicker &&
+        !showProfileEditor && (
           <Animated.View
             style={[StyleSheet.absoluteFill, filterAnimatedStyle]}
             pointerEvents="auto"
@@ -190,7 +270,7 @@ export default function App() {
           </Animated.View>
         )}
 
-      {showSavedShows && !evenimentSelectat && (
+      {showSavedShows && !evenimentSelectat && !showProfileEditor && (
         <Animated.View
           style={[StyleSheet.absoluteFill, savedAnimatedStyle]}
           pointerEvents="auto"
@@ -210,7 +290,7 @@ export default function App() {
         </Animated.View>
       )}
 
-      {evenimentSelectat && (
+      {evenimentSelectat && !showProfileEditor && (
         <Animated.View
           style={[StyleSheet.absoluteFill, detailsAnimatedStyle]}
           pointerEvents="auto"

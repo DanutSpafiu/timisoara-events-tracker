@@ -26,6 +26,8 @@ interface EventListScreenProps {
   onNavigateToSaved: () => void;
   onNavigateToFilter: () => void;
   onNavigateToDatePicker: () => void;
+  onNavigateToProfileEditor: () => void;
+  userName: string;
   filteredEvents: Eveniment[];
 }
 
@@ -36,6 +38,8 @@ export function EventListScreen({
   onNavigateToSaved,
   onNavigateToFilter,
   onNavigateToDatePicker,
+  onNavigateToProfileEditor,
+  userName,
   filteredEvents: filteredEventsProp,
 }: EventListScreenProps) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -91,6 +95,7 @@ export function EventListScreen({
                 style={eventListStyles.profileMenuItem}
                 onPress={() => {
                   setShowProfileMenu(false);
+                  onNavigateToProfileEditor();
                 }}
               >
                 <View style={eventListStyles.profileMenuItemContent}>
@@ -98,7 +103,7 @@ export function EventListScreen({
                     Contul meu
                   </Text>
                   <Text style={eventListStyles.profileMenuItemSubtitle}>
-                    User
+                    {userName}
                   </Text>
                 </View>
               </TouchableOpacity>

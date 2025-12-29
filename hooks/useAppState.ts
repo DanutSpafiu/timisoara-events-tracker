@@ -8,8 +8,14 @@ export function useAppState() {
   const [showSavedShows, setShowSavedShows] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+  
+  // Profile state
+  const [userName, setUserName] = useState("User");
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [userInterests, setUserInterests] = useState<Set<string>>(new Set());
 
   const toggleSave = (eventId: number) => {
     setSavedEvents((prev) => {
@@ -47,6 +53,18 @@ export function useAppState() {
     });
   };
 
+  const toggleInterest = (interest: string) => {
+    setUserInterests((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(interest)) {
+        newSet.delete(interest);
+      } else {
+        newSet.add(interest);
+      }
+      return newSet;
+    });
+  };
+
   return {
     // State
     isLoggedIn,
@@ -55,19 +73,28 @@ export function useAppState() {
     showSavedShows,
     showFilter,
     showDatePicker,
+    showProfileEditor,
     selectedCategories,
     selectedDates,
+    userName,
+    profilePicture,
+    userInterests,
     // Setters
     setIsLoggedIn,
     setEvenimentSelectat,
     setShowSavedShows,
     setShowFilter,
     setShowDatePicker,
+    setShowProfileEditor,
     setSelectedDates,
+    setUserName,
+    setProfilePicture,
+    setUserInterests,
     // Actions
     toggleSave,
     toggleCategory,
     toggleDate,
+    toggleInterest,
   };
 }
 
