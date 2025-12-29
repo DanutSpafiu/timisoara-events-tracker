@@ -1,0 +1,111 @@
+import { StyleSheet } from "react-native";
+
+export const loginStyles = StyleSheet.create({
+  loginContainer: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loginContent: {
+    backgroundColor: "#FFF",
+    borderRadius: 16,
+    padding: 32,
+    width: "100%",
+    maxWidth: 400,
+    alignItems: "center",
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  logoText: {
+    fontSize: 48,
+  },
+  loginSubtitle: {
+    fontSize: 16,
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 32,
+    lineHeight: 24,
+  },
+  loginButtonsContainer: {
+    width: "100%",
+    gap: 16,
+    marginBottom: 24,
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFF",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  googleIcon: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#4285F4",
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+  },
+  appleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#000",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  appleButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#FFF",
+  },
+  facebookButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1877F2",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  facebookIcon: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#FFF",
+  },
+  facebookButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#FFF",
+  },
+  termsText: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 18,
+  },
+  termsLink: {
+    color: "#1877F2",
+    textDecorationLine: "underline",
+  },
+});
+
