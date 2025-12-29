@@ -156,5 +156,14 @@ export const eventListStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  eventsCountText: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 16,
+    fontWeight: "500",
+  },
+  underlinedText: {
+    textDecorationLine: "underline",
+  },
 });
 

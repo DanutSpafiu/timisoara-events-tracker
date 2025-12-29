@@ -1,3 +1,10 @@
+import {
+  CalendarIcon,
+  ClockIcon,
+  MapPinIcon,
+  UserIcon,
+} from "@/components/icons";
+import type { Eveniment } from "@/types/events";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React, { useState } from "react";
@@ -10,14 +17,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  BackIcon,
-  CalendarIcon,
-  ClockIcon,
-  MapPinIcon,
-  UserIcon,
-} from "@/components/icons";
-import type { Eveniment } from "@/types/events";
 import { eventListStyles } from "./styles/eventListStyles";
 
 interface EventListScreenProps {
@@ -61,7 +60,8 @@ export function EventListScreen({
             onPress={() => setShowDropdown(!showDropdown)}
           >
             <Text style={eventListStyles.headerTitle}>
-              Evenimente în Timișoara
+              Evenimente în{" "}
+              <Text style={eventListStyles.underlinedText}>Timișoara</Text>
             </Text>
             <Text style={eventListStyles.chevron}>
               {showDropdown ? "▲" : "▼"}
@@ -216,84 +216,96 @@ export function EventListScreen({
             </Text>
           </View>
         ) : (
-          filteredEvents.map((eveniment) => (
-            <TouchableOpacity
-              key={eveniment.id}
-              style={eventListStyles.evenimentCard}
-              onPress={() => onSelectEvent(eveniment)}
-              activeOpacity={0.7}
-            >
-              <View
-                style={[
-                  eventListStyles.evenimentBanner,
-                  { backgroundColor: eveniment.culoare },
-                ]}
+          <>
+            <Text style={eventListStyles.eventsCountText}>
+              {filteredEvents.length}{" "}
+              {filteredEvents.length === 1
+                ? "eveniment găsit"
+                : "evenimente găsite"}
+            </Text>
+            {filteredEvents.map((eveniment) => (
+              <TouchableOpacity
+                key={eveniment.id}
+                style={eventListStyles.evenimentCard}
+                onPress={() => onSelectEvent(eveniment)}
+                activeOpacity={0.7}
               >
-                <Image
-                  source={{ uri: eveniment.imageUrl }}
-                  style={eventListStyles.evenimentBannerImage}
-                  contentFit="cover"
-                />
-                <View style={eventListStyles.bannerOverlay} />
-                <View style={eventListStyles.categoryBadge}>
-                  <Text style={eventListStyles.categoryText}>
-                    {eveniment.categorie}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={eventListStyles.bookmarkButton}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    onToggleSave(eveniment.id);
-                  }}
+                <View
+                  style={[
+                    eventListStyles.evenimentBanner,
+                    { backgroundColor: eveniment.culoare },
+                  ]}
                 >
-                  <MaterialIcons
-                    name={
-                      savedEvents.has(eveniment.id)
-                        ? "bookmark"
-                        : "bookmark-border"
-                    }
-                    size={20}
-                    color={savedEvents.has(eveniment.id) ? "#FFD700" : "#FFF"}
+                  <Image
+                    source={{ uri: eveniment.imageUrl }}
+                    style={eventListStyles.evenimentBannerImage}
+                    contentFit="cover"
                   />
-                </TouchableOpacity>
-              </View>
-
-              <View style={eventListStyles.evenimentContent}>
-                <Text style={eventListStyles.evenimentTitlu}>
-                  {eveniment.titlu}
-                </Text>
-                <Text style={eventListStyles.evenimentDescriere}>
-                  {eveniment.descriere}
-                </Text>
-
-                <View style={eventListStyles.evenimentInfo}>
-                  <View style={eventListStyles.infoRow}>
-                    <CalendarIcon />
-                    <Text style={eventListStyles.infoText}>
-                      {eveniment.dataFormatata}
+                  <View style={eventListStyles.bannerOverlay} />
+                  <View style={eventListStyles.categoryBadge}>
+                    <Text style={eventListStyles.categoryText}>
+                      {eveniment.categorie}
                     </Text>
                   </View>
-                  <View style={eventListStyles.infoRow}>
-                    <ClockIcon />
-                    <Text style={eventListStyles.infoText}>
-                      {eveniment.ora}
-                    </Text>
-                  </View>
+                  <TouchableOpacity
+                    style={eventListStyles.bookmarkButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      onToggleSave(eveniment.id);
+                    }}
+                  >
+                    <MaterialIcons
+                      name={
+                        savedEvents.has(eveniment.id)
+                          ? "bookmark"
+                          : "bookmark-border"
+                      }
+                      size={20}
+                      color={savedEvents.has(eveniment.id) ? "#FFD700" : "#FFF"}
+                    />
+                  </TouchableOpacity>
                 </View>
 
-                <View style={eventListStyles.infoRow}>
-                  <MapPinIcon />
-                  <Text style={[eventListStyles.infoText, eventListStyles.locatieText]}>
-                    {eveniment.locatie}
+                <View style={eventListStyles.evenimentContent}>
+                  <Text style={eventListStyles.evenimentTitlu}>
+                    {eveniment.titlu}
                   </Text>
+                  <Text style={eventListStyles.evenimentDescriere}>
+                    {eveniment.descriere}
+                  </Text>
+
+                  <View style={eventListStyles.evenimentInfo}>
+                    <View style={eventListStyles.infoRow}>
+                      <CalendarIcon />
+                      <Text style={eventListStyles.infoText}>
+                        {eveniment.dataFormatata}
+                      </Text>
+                    </View>
+                    <View style={eventListStyles.infoRow}>
+                      <ClockIcon />
+                      <Text style={eventListStyles.infoText}>
+                        {eveniment.ora}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={eventListStyles.infoRow}>
+                    <MapPinIcon />
+                    <Text
+                      style={[
+                        eventListStyles.infoText,
+                        eventListStyles.locatieText,
+                      ]}
+                    >
+                      {eveniment.locatie}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))
+              </TouchableOpacity>
+            ))}
+          </>
         )}
       </ScrollView>
     </View>
   );
 }
-

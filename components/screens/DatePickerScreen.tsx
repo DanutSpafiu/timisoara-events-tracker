@@ -1,9 +1,15 @@
-import React from "react";
-import { ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
-import { Calendar } from "react-native-calendars";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BackIcon } from "@/components/icons";
 import { EVENIMENTE } from "@/constants/events";
+import React from "react";
+import {
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { datePickerStyles } from "./styles/datePickerStyles";
 
 interface DatePickerScreenProps {
@@ -82,7 +88,10 @@ export function DatePickerScreen({
               </Text>
             )}
           </View>
-          <TouchableOpacity onPress={onBack} style={datePickerStyles.closeButton}>
+          <TouchableOpacity
+            onPress={onBack}
+            style={datePickerStyles.closeButton}
+          >
             <Text style={datePickerStyles.closeButtonText}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -126,7 +135,8 @@ export function DatePickerScreen({
                     style={[
                       datePickerStyles.calendarDayContainer,
                       isSelected && datePickerStyles.calendarDaySelected,
-                      state === "disabled" && datePickerStyles.calendarDayDisabled,
+                      state === "disabled" &&
+                        datePickerStyles.calendarDayDisabled,
                     ]}
                     onPress={() => {
                       if (hasEvent && state !== "disabled") {
@@ -164,7 +174,10 @@ export function DatePickerScreen({
               {selectedDatesArray.map((dateString) => {
                 const eventCount = getEventCount(dateString);
                 return (
-                  <View key={dateString} style={datePickerStyles.selectedDateChip}>
+                  <View
+                    key={dateString}
+                    style={datePickerStyles.selectedDateChip}
+                  >
                     <Text style={datePickerStyles.selectedDateText}>
                       {formatDate(dateString)} ({eventCount}{" "}
                       {eventCount === 1 ? "ev." : "ev."})
@@ -194,4 +207,3 @@ export function DatePickerScreen({
     </View>
   );
 }
-
