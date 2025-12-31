@@ -14,6 +14,12 @@ export const eventListStyles = StyleSheet.create({
   profileButton: {
     padding: 8,
   },
+  profilePicture: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#E5E5E5",
+  },
   profileMenuOverlay: {
     position: "absolute",
     top: 0,

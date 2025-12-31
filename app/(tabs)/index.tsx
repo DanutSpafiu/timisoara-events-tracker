@@ -211,6 +211,7 @@ export default function App() {
               onNavigateToDatePicker={() => setShowDatePicker(true)}
               onNavigateToProfileEditor={() => setShowProfileEditor(true)}
               userName={userName}
+              profilePicture={profilePicture}
               filteredEvents={filteredEvents}
             />
           </Animated.View>

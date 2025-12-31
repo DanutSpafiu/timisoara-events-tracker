@@ -28,6 +28,7 @@ interface EventListScreenProps {
   onNavigateToDatePicker: () => void;
   onNavigateToProfileEditor: () => void;
   userName: string;
+  profilePicture: string | null;
   filteredEvents: Eveniment[];
 }
 
@@ -40,6 +41,7 @@ export function EventListScreen({
   onNavigateToDatePicker,
   onNavigateToProfileEditor,
   userName,
+  profilePicture,
   filteredEvents: filteredEventsProp,
 }: EventListScreenProps) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -78,7 +80,15 @@ export function EventListScreen({
               setShowDropdown(false);
             }}
           >
-            <UserIcon />
+            {profilePicture ? (
+              <Image
+                source={{ uri: profilePicture }}
+                style={eventListStyles.profilePicture}
+                contentFit="cover"
+              />
+            ) : (
+              <UserIcon />
+            )}
           </TouchableOpacity>
         </View>
 
